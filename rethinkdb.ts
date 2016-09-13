@@ -201,38 +201,35 @@ export class dal implements nodulus.IDal {
             db.collection = function (collectionName: string) {
                 var table = db.table(collectionName);
 
-                var skip = table.skip;
-                table.skip = function (skipValue: number) {
-                    var f = skip(skipValue);
-                    f.toArray = f.run;
-                    return f;
-                }
                 table.ensureIndex = function () { };
                 table.find = function (filter: any) {
-                    var actualFilter: any = filter;
-                    //find special commands (they start with $)
+                    var actualFilter = filter;
                     for (var key in filter) {
                         switch (key) {
                             case "$query":
                                 actualFilter = filter[key];
-
                                 break;
-
                         }
                     }
-
-
                     var f = table.filter(actualFilter);
+
                     f.toArray = f.run;
+
+                    var skip = f.skip;
+                    f.skip = function (skipValue: number) {
+                        var f = table.skip(skipValue);
+                        f.toArray = f.run;
+                        return f;
+                    };
+
+
                     return f;
                 };
-
                 table.save = function (value: any, callback: Function) {
                     table.insert(value).run(function (err: any, results: any) {
                         callback(err, results);
-                    })
-
-                }
+                    });
+                };
                 return table;
             };
             callback(null, db);
