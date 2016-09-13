@@ -1,1 +1,2 @@
-# -nodulus-data-rethinkdb
+# -nodulus-data
+nodulus data access layer
